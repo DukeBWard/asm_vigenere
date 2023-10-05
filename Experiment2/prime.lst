@@ -1,0 +1,228 @@
+   1 0000               # FILE:         $File$
+   2 0000               # AUTHOR:       P. White
+   3 0000               # CONTRIBUTORS: M. Reek
+   4 0000               # 		Luke Ward
+   5 0000               #
+   6 0000               # DESCRIPTION:
+   7 0000               #  	This is a simple program to find the prime numbers between 3 - 101
+   8 0000               #	inclusive.  This is done by using the simple algorithm where a 
+   9 0000               #	number 'n' is prime if no number between 2 and n-1 divides evenly 
+  10 0000               #	into 'n'
+  11 0000               #
+  12 0000               # ARGUMENTS:
+  13 0000               #       None
+  14 0000               #
+  15 0000               # INPUT:
+  16 0000               #	none
+  17 0000               #
+  18 0000               # OUTPUT:
+  19 0000               #	the prime numbers printed 1 to a line
+  20 0000               #
+  21 0000               # REVISION HISTORY:
+  22 0000               #       Dec  03         - P. White, created program
+  23 0000               #       Mar  04         - M. Reek, added named constants
+  24 0000               #
+  25 0000               
+  26 0000               #
+  27 0000               # CONSTANT DECLARATIONS
+  28 0000               #
+  29 0000               PRINT_INT	= 1		# code for syscall to print integer
+  30 0000               PRINT_STRING	= 4		# code for syscall to print a string
+  31 0000               MIN		= 3		# minimum value to check
+  32 0000               MAX		= 102		# max value to check
+  33 0000               
+  34 0000               #
+  35 0000               # DATA DECLARATIONS
+  36 0000               #
+  37 0000               	.data
+  38 0000               newline:
+  39 0000 0A00    		.asciiz "\n"
+  40 0002               #
+  41 0002               # MAIN PROGRAM
+  42 0002               #
+  43 0000               	.text
+  44 0000               	.align	2
+  45 0000               	.globl	main
+  46 0000               main:
+  47 0000 23BDFFF8	        addi    $sp,$sp,-8  	# space for return address/doubleword aligned
+  48 0004 AFBF0000	        sw      $ra, 0($sp)     # store the ra on the stack
+  49 0008               
+  50 0008 0C000006		jal	find_primes
+  51 000c               
+  52 000c                       #
+  53 000c                       # Now exit the program.
+  54 000c               	#
+  55 000c 8FBF0000	        lw      $ra, 0($sp)	# clean up stack
+  56 0010 23BD0008	        addi    $sp,$sp,8
+  57 0014 03E00008	        jr      $ra
+  58 0018               
+  59 0018               #
+  60 0018               # Name:		find_primes 
+  61 0018               #
+  62 0018               # Description:	find the prime numbers between 3 and 101 inclusive.
+  63 0018               # Coding Notes:	This function must call is_prime to determine if a
+  64 0018               #		number is prime, and based on the return value of 
+  65 0018               #		is_prime, call print_number to print that prime 
+  66 0018               # Arguments:	none
+  67 0018               # Returns:	nothing
+  68 0018               #
+  69 0018               
+  70 0018               find_primes:
+  71 0018 23BDFFD8	        addi    $sp,$sp,-40     # allocate stack frame (on doubleword boundary)
+  72 001c AFBF0020	        sw      $ra, 32($sp)    # store the ra & s reg's on the stack
+  73 0020 AFB7001C	        sw      $s7, 28($sp)
+  74 0024 AFB60018	        sw      $s6, 24($sp)
+  75 0028 AFB50014	        sw      $s5, 20($sp)
+  76 002c AFB40010	        sw      $s4, 16($sp)
+  77 0030 AFB3000C	        sw      $s3, 12($sp)
+  78 0034 AFB20008	        sw      $s2, 8($sp)
+  79 0038 AFB10004	        sw      $s1, 4($sp)
+  80 003c AFB00000	        sw      $s0, 0($sp)
+  81 0040               
+  82 0040               # ######################################
+  83 0040               # ##### BEGIN STUDENT CODE BLOCK 1 #####
+  84 0040               
+  85 0040 34100066	        li $s0, MAX
+  86 0044 34110003	        li $s1, MIN
+  87 0048               loop:   
+  88 0048 12300009	        beq $s1, $s0, exit      # beginning of loop to check for primes
+  89 004c 02202021	        move $a0, $s1
+  90 0050               
+  91 0050 0C000027	        jal is_prime
+  92 0054                      
+  93 0054               if:     
+  94 0054 14400002	        bne $v0, $zero, else    # if not prime, print nothing
+  95 0058 22310001	        addi $s1, $s1, 1        # increment counter
+  96 005c               
+  97 005c 08000012	        j loop
+  98 0060               else:   
+  99 0060 02202021	        move $a0, $s1           # if prime, print prime number
+ 100 0064 22310001	        addi $s1, $s1, 1        # increment counter
+ 101 0068 0C00004D	        jal print_number
+ 102 006c 08000012	        j loop
+ 103 0070                       
+ 104 0070                       
+ 105 0070               
+ 106 0070               exit:
+ 107 0070                       
+ 108 0070               
+ 109 0070               # ###### END STUDENT CODE BLOCK 1 ######
+ 110 0070               # ######################################
+ 111 0070               
+ 112 0070               
+ 113 0070 8FBF0020	        lw      $ra, 32($sp)    # restore the ra & s reg's from the stack
+ 114 0074 8FB7001C	        lw      $s7, 28($sp)
+ 115 0078 8FB60018	        lw      $s6, 24($sp)
+ 116 007c 8FB50014	        lw      $s5, 20($sp)
+ 117 0080 8FB40010	        lw      $s4, 16($sp)
+ 118 0084 8FB3000C	        lw      $s3, 12($sp)
+ 119 0088 8FB20008	        lw      $s2, 8($sp)
+ 120 008c 8FB10004	        lw      $s1, 4($sp)
+ 121 0090 8FB00000	        lw      $s0, 0($sp)
+ 122 0094 23BD0028	        addi    $sp,$sp,40      # clean up stack
+ 123 0098 03E00008		jr	$ra
+ 124 009c               
+ 125 009c               #
+ 126 009c               # Name:		is_prime 
+ 127 009c               #
+ 128 009c               # Description:	checks to see if the num passed in is prime
+ 129 009c               # Arguments:  	a0	The number to test to see if prime
+ 130 009c               # Returns: 	v0	a value of 1 if the number in a0 is prime
+ 131 009c               #			a value of 0 otherwise
+ 132 009c               #
+ 133 009c               
+ 134 009c               is_prime:
+ 135 009c 23BDFFD8	        addi    $sp,$sp,-40    	# allocate stackframe (doubleword aligned)
+ 136 00a0 AFBF0020	        sw      $ra, 32($sp)    # store the ra & s reg's on the stack
+ 137 00a4 AFB7001C	        sw      $s7, 28($sp)
+ 138 00a8 AFB60018	        sw      $s6, 24($sp)
+ 139 00ac AFB50014	        sw      $s5, 20($sp)
+ 140 00b0 AFB40010	        sw      $s4, 16($sp)
+ 141 00b4 AFB3000C	        sw      $s3, 12($sp)
+ 142 00b8 AFB20008	        sw      $s2, 8($sp)
+ 143 00bc AFB10004	        sw      $s1, 4($sp)
+ 144 00c0 AFB00000	        sw      $s0, 0($sp)
+ 145 00c4               
+ 146 00c4               # ######################################
+ 147 00c4               # ##### BEGIN STUDENT CODE BLOCK 2 #####
+ 148 00c4               
+ 149 00c4 00809821	        move $s3, $a0
+ 150 00c8 34110001	        li $s1, 1
+ 151 00cc 34120002	        li $s2, 2
+ 152 00d0 0271602A	        slt $t4, $s3, $s1
+ 153 00d4 1271000A	        beq $s3, $s1, prime_false       # if less than 1, false
+ 154 00d8 12710009	        beq $s3, $s1, prime_false       # if equal to 1, false
+ 155 00dc 12720006	        beq $s3, $s2, prime_true        # if equal to 2, false
+ 156 00e0               
+ 157 00e0               loop_prime:                             # loop through numbers until reaches target number
+ 158 00e0 12530005	        beq $s2, $s3, prime_true        # if number gets incremented to input without having a 0 remainder, prime
+ 159 00e4 0272001A	        div $s3, $s2
+ 160 00e8 0000A010	        mfhi $s4
+ 161 00ec 12800004	        beq $s4, $zero, prime_false     # if remainder is zero, not prime
+ 162 00f0 22520001	        addi $s2, $s2, 1
+ 163 00f4 08000038	        j loop_prime
+ 164 00f8               
+ 165 00f8               prime_true:
+ 166 00f8 34020001	        li $v0, 1
+ 167 00fc 08000042	        j exit_prime
+ 168 0100               
+ 169 0100               prime_false:
+ 170 0100 34020000	        li $v0, 0
+ 171 0104 08000042	        j exit_prime
+ 172 0108               
+ 173 0108               exit_prime:
+ 174 0108               
+ 175 0108               # ###### END STUDENT CODE BLOCK 2 ######
+ 176 0108               # ######################################
+ 177 0108               
+ 178 0108 8FBF0020	        lw      $ra, 32($sp)    # restore the ra & s reg's from the stack
+ 179 010c 8FB7001C	        lw      $s7, 28($sp)
+ 180 0110 8FB60018	        lw      $s6, 24($sp)
+ 181 0114 8FB50014	        lw      $s5, 20($sp)
+ 182 0118 8FB40010	        lw      $s4, 16($sp)
+ 183 011c 8FB3000C	        lw      $s3, 12($sp)
+ 184 0120 8FB20008	        lw      $s2, 8($sp)
+ 185 0124 8FB10004	        lw      $s1, 4($sp)
+ 186 0128 8FB00000	        lw      $s0, 0($sp)
+ 187 012c 23BD0028	        addi    $sp,$sp,40      # clean up the stack
+ 188 0130 03E00008		jr	$ra
+ 189 0134               
+ 190 0134               #
+ 191 0134               # Name;		print_number 
+ 192 0134               #
+ 193 0134               # Description:	This routine reads a number then a newline to stdout
+ 194 0134               # Arguments:	a0,the number to print
+ 195 0134               # Returns:	nothing
+ 196 0134               #
+ 197 0134               print_number:
+ 198 0134               
+ 199 0134 34020001	        li 	$v0,PRINT_INT
+ 200 0138 0000000C	        syscall			#print a0
+ 201 013c               
+ 202 013c 3C040000	        la	$a0, newline
+     0140 34840000
+ 203 0144 34020004	        li      $v0,PRINT_STRING
+ 204 0148 0000000C	        syscall			#print a newline
+ 205 014c               
+ 206 014c 03E00008	        jr      $ra
+
+
+    Name      F  Value   M V Sect.      References
+------------  - -------- - - ----- ---------------------
+MAX             00000066 =         @   32,  85
+MIN             00000003 =         @   31,  86
+PRINT_INT       00000001 =         @   29, 199
+PRINT_STRING    00000004 =         @   30, 203
+else            00000060 R   text  @   94,  98
+exit            00000070 R   text  @   88, 106
+exit_prime      00000108 R   text  @  167, 171, 173
+find_primes     00000018 R   text  @   50,  70
+if              00000054 R   text  @   93
+is_prime        0000009C R   text  @   91, 134
+loop            00000048 R   text  @   87,  97, 102
+loop_prime      000000E0 R   text  @  157, 163
+main            00000000 R G text  @   45,  46
+newline         00000000 R   data  @   38, 202
+prime_false     00000100 R   text  @  153, 154, 161, 169
+prime_true      000000F8 R   text  @  155, 158, 165
+print_number    00000134 R   text  @  101, 197

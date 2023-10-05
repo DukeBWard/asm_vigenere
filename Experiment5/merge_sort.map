@@ -1,0 +1,91 @@
+Load map
+Module entry point: 0x004005c4
+
+Module:  merge_sort.obj
+ Text segment:  1024 bytes, load point 0x00400000
+ Data segment:  712 bytes, load point 0x10000000
+ Symbols:
+               Name Section Mode    Value
+  merge_header_text   Data   R   0x1000023c
+               main   Text   RG  0x00400000
+              after   Data   R   0x100001ed
+            ra_done   Text   R   0x004001c0
+    merge_done_text   Data   R   0x10000249
+            pa_done   Text   R   0x00400170
+        parm_block2   Data   R   0x1000000c
+    merge_test_left   Data   R   0x10000279
+              space   Data   R   0x100001dc
+           READ_INT          A   0x00000005
+            scratch   Data   R   0x10000074
+         STOP_INPUT          A   0x0000270f
+   merge_test_right   Data   R   0x1000029e
+         arr_merge1   Data   R   0x10000114
+         arr_merge2   Data   R   0x1000012c
+         arr_merge3   Data   R   0x10000144
+            compare   Text   R   0x004003f0
+     rev_order_text   Data   R   0x1000022d
+           compare2   Text   R   0x004003f8
+        MAX_NUMBERS          A   0x00000014
+       PRINT_STRING          A   0x00000004
+            ca_loop   Text   R   0x004001dc
+             dollar   Data   R   0x100001e0
+            newline   Data   R   0x100001e2
+         merge_test   Text   R   0x0040029c
+         parm_merge   Data   R   0x10000018
+          run_merge   Text   R   0x004001fc
+          copyarray   Text   R   0x004001d8
+      no_merge_test   Text   R   0x00400014
+     merge_test_mid   Data   R   0x1000025b
+         parm_block   Data   R   0x10000000
+       arr_merge3r1   Data   R   0x1000015c
+            ra_loop   Text   R   0x004001a0
+          main_done   Text   R   0x004000a0
+            pa_loop   Text   R   0x00400144
+           run_test   Text   R   0x004000b4
+      in_order_text   Data   R   0x10000223
+          readarray   Text   R   0x00400184
+          PRINT_INT          A   0x00000001
+            ca_done   Text   R   0x004001f8
+       arr_merge3l1   Data   R   0x1000017c
+             parray   Text   R   0x0040013c
+              pound   Data   R   0x100001de
+             before   Data   R   0x100001e4
+             prompt   Data   R   0x100001f6
+           arr_copy   Data   R   0x100000c4
+              array   Data   R   0x10000024
+       arr_merge3m1   Data   R   0x1000019c
+
+Module:  merge.obj
+ Text segment:  320 bytes, load point 0x00400400
+ Symbols:
+               Name Section Mode    Value
+         exit_scrap   Text   R   0x004004fc
+        area1_empty   Text   R   0x004004cc
+      a0_is_smaller   Text   R   0x004004b8
+       PRINT_STRING          A   0x00000004
+               loop   Text   R   0x00400488
+         exit_merge   Text   R   0x00400514
+      a1_is_smaller   Text   R   0x004004a4
+          PRINT_INT          A   0x00000001
+              merge   Text   RG  0x00400400
+        area2_empty   Text   R   0x004004e4
+
+Module:  sort.obj
+ Text segment:  128 bytes, load point 0x00400540
+ Symbols:
+               Name Section Mode    Value
+               sort   Text   RG  0x00400540
+       PRINT_STRING          A   0x00000004
+               exit   Text   R   0x004005a4
+          PRINT_INT          A   0x00000001
+
+Module:  r2k_startup.obj
+ Text segment:  64 bytes, load point 0x004005c0
+ Data segment:  8 bytes, load point 0x100002c8
+ Symbols:
+               Name Section Mode    Value
+        __heap_size   Data   RG  0x100002cc
+          SYS_EXIT2          A   0x00000011
+           SYS_SBRK          A   0x00000009
+     __r2k__entry__   Text   RG  0x004005c4
+         __heap_ptr   Data   RG  0x100002c8

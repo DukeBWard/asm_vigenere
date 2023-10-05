@@ -1,0 +1,67 @@
+Load map
+Module entry point: 0x004004ac
+
+Module:  vigenereCipher.obj
+ Text segment:  1192 bytes, load point 0x00400000
+ Data segment:  328 bytes, load point 0x10000000
+ Symbols:
+                  Name Section Mode    Value
+          invalid_size   Text   R   0x004000fc
+                 not_e   Text   R   0x00400040
+            exit_index   Text   R   0x00400474
+                  main   Text   RG  0x00400000
+             get_index   Text   R   0x00400454
+          exit_decrypt   Text   R   0x004003b4
+       skip_nf_decrypt   Text   R   0x0040038c
+  exit_encrypt_newline   Text   R   0x0040021c
+            index_loop   Text   R   0x0040045c
+    error_invalid_flag   Data   R   0x1000011e
+                 space   Data   R   0x10000135
+             good_flag   Text   R   0x00400044
+              READ_INT          A   0x00000005
+               buf_key   Data   R   0x1000005a
+             char_loop   Text   R   0x0040048c
+               skip_nf   Text   R   0x004001fc
+              get_char   Text   R   0x00400488
+          PRINT_STRING          A   0x00000004
+              key_else   Text   R   0x0040019c
+                dollar   Data   R   0x10000139
+              letter_d   Data   R   0x10000140
+              letter_e   Data   R   0x1000013d
+                  exit   Text   R   0x004000e8
+          invalid_flag   Text   R   0x00400120
+                  wrap   Text   R   0x00400368
+            buf_e_or_d   Data   R   0x10000000
+                else_f   Text   R   0x0040020c
+               newline   Data   R   0x1000013b
+             buf_alpha   Data   R   0x10000008
+               buf_len   Data   R   0x10000004
+  exit_decrypt_newline   Text   R   0x004003ac
+             wrap_else   Text   R   0x0040036c
+     reset_key_decrypt   Text   R   0x00400314
+        else_f_decrypt   Text   R   0x0040039c
+          decrypt_loop   Text   R   0x00400308
+               buf_msg   Data   R   0x100000ac
+    error_invalid_size   Data   R   0x100000fe
+         exit_index_nf   Text   R   0x0040047c
+               encrypt   Text   RG  0x00400144
+             PRINT_INT          A   0x00000001
+             reset_key   Text   R   0x00400194
+                 pound   Data   R   0x10000137
+           READ_STRING          A   0x00000008
+             exit_char   Text   R   0x004004a0
+          exit_encrypt   Text   R   0x00400224
+      key_else_decrypt   Text   R   0x0040031c
+          encrypt_loop   Text   R   0x00400188
+               decrypt   Text   RG  0x004002c4
+
+Module:  r2k_startup.obj
+ Text segment:  64 bytes, load point 0x004004a8
+ Data segment:  8 bytes, load point 0x10000148
+ Symbols:
+                  Name Section Mode    Value
+           __heap_size   Data   RG  0x1000014c
+             SYS_EXIT2          A   0x00000011
+              SYS_SBRK          A   0x00000009
+        __r2k__entry__   Text   RG  0x004004ac
+            __heap_ptr   Data   RG  0x10000148

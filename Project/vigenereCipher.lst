@@ -1,0 +1,566 @@
+   1 0000               # File: vigenere_cipher.asm
+   2 0000               # Author:   Luke Ward
+   3 0000               #
+   4 0000               # Constants for system calls
+   5 0000               #
+   6 0000               PRINT_INT       = 1             # code for syscall to print integer
+   7 0000               PRINT_STRING    = 4             # code for syscall to print a string
+   8 0000               READ_INT        = 5             # code for syscall to read an integer
+   9 0000               READ_STRING     = 8             # code for syscall to read a string
+  10 0000               
+  11 0000               #
+  12 0000               # Data areas
+  13 0000               #
+  14 0000                   .data
+  15 0000                   .align 2
+  16 0000               
+  17 0000 000000  	buf_e_or_d: .space 3    # e or d
+  18 0003 00      	    .align 2    
+  19 0004 00000000	buf_len: .space 4       # length of alphabet
+  20 0008               
+  21 0008 00000000	buf_alpha: .space 82    # alphabet itself
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  22 005a                
+  23 005a 00000000	buf_key: .space 82      # key for cipher
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  24 00ac                
+  25 00ac 00000000	buf_msg: .space 82      # message
+          00000000
+          00000000
+          00000000
+          00000000
+          00000000
+  26 00fe               		
+  27 00fe               error_invalid_size:
+  28 00fe 496E7661	    .asciiz "Invalid Alphabet Size Inputted\n"
+          6C696420
+          416C7068
+          61626574
+          2053697A
+          6520496E
+  29 011e               error_invalid_flag:
+  30 011e 496E7661	    .asciiz "Invalid Flag Inputted\n"
+          6C696420
+          466C6167
+          20496E70
+          75747465
+          640A00  
+  31 0135               
+  32 0135               space:	
+  33 0135 2000    		.asciiz	" "
+  34 0137               pound:	
+  35 0137 2300    		.asciiz	"#"
+  36 0139               dollar:	
+  37 0139 2400    		.asciiz	"$"
+  38 013b               newline:
+  39 013b 0A00    		.asciiz	"\n"
+  40 013d               letter_e:
+  41 013d 650A00  	    .asciiz "e\n"
+  42 0140               letter_d:
+  43 0140 640A00  	    .asciiz "d\n"
+  44 0143               
+  45 0143               #
+  46 0143               # TEXT AREAS
+  47 0143               # 
+  48 0143               
+  49 0000                   .text
+  50 0000                   .align 2
+  51 0000               
+  52 0000                   .globl main
+  53 0000               
+  54 0000               #
+  55 0000               # MAIN HERE
+  56 0000               #
+  57 0000               main:
+  58 0000 23BDFFF4	    addi	$sp,$sp,-12	# allocate space for the return address
+  59 0004 AFBF0008		sw	$ra,8($sp)	# store the ra on the stack
+  60 0008 AFB70004		sw	$s7,4($sp)	# store the ra on the stack
+  61 000c AFB60000		sw	$s6,0($sp)	# store the ra on the stack
+  62 0010               
+  63 0010 3C040000	    la $a0, buf_e_or_d
+     0014 34840000
+  64 0018 34050003	    li $a1, 3
+  65 001c 34020008	    li $v0, 8
+  66 0020 0000000C	    syscall
+  67 0024               
+  68 0024 3C080000	    la $t0, buf_e_or_d
+     0028 35080000
+  69 002c 81190000	    lb $t9, 0($t0)
+  70 0030 340B0065	    li $t3, 101
+  71 0034 340C0064	    li $t4, 100
+  72 0038 172B0001	    bne $t9, $t3, not_e        # check if flag is e or d
+  73 003c 08000011	    j good_flag
+  74 0040               
+  75 0040               not_e:      
+  76 0040                   
+  77 0040 172C0037	    bne $t9, $t4,invalid_flag
+  78 0044               
+  79 0044               good_flag:
+  80 0044               
+  81 0044 34020005	    li $v0, 5
+  82 0048 0000000C	    syscall
+  83 004c               
+  84 004c 3C080000	    la $t0, buf_len
+     0050 35080000
+  85 0054 A1020000	    sb $v0, 0($t0)
+  86 0058 810B0000	    lb $t3, 0($t0)
+  87 005c 0160482A	    slt $t1, $t3, $zero         # if len <= 0
+  88 0060 15200026	    bne $t1, $zero, invalid_size
+  89 0064                   
+  90 0064 340A0050	    li $t2, 80
+  91 0068 014B482A	    slt $t1, $t2, $t3
+  92 006c 15200023	    bne $t1, $zero, invalid_size # if len is > 80
+  93 0070               
+  94 0070 3C040000	    la $a0, buf_alpha            # alphabet input
+     0074 34840000
+  95 0078 34050052	    li $a1, 82
+  96 007c 34020008	    li $v0, 8
+  97 0080 0000000C	    syscall
+  98 0084               
+  99 0084 3C040000	    la $a0, buf_key              # key input
+     0088 34840000
+ 100 008c 34050052	    li $a1, 82
+ 101 0090 34020008	    li $v0, 8
+ 102 0094 0000000C	    syscall
+ 103 0098               
+ 104 0098 3C040000	    la $a0, buf_msg              # message input
+     009c 34840000
+ 105 00a0 34050052	    li $a1, 82
+ 106 00a4 34020008	    li $v0, 8
+ 107 00a8 0000000C	    syscall
+ 108 00ac               
+ 109 00ac 3C080000	    la $t0, buf_e_or_d           # check if e or d
+     00b0 35080000
+ 110 00b4 81080000	    lb $t0, 0($t0)
+ 111 00b8 340B0065	    li $t3, 101
+ 112 00bc 340C0064	    li $t4, 100
+ 113 00c0                   
+ 114 00c0 3C040000	    la $a0, buf_len
+     00c4 34840000
+ 115 00c8 3C050000	    la $a1, buf_alpha
+     00cc 34A50000
+ 116 00d0 3C060000	    la $a2, buf_key
+     00d4 34C60000
+ 117 00d8 3C070000	    la $a3, buf_msg
+     00dc 34E70000
+ 118 00e0 110C0078	    beq $t0, $t4, decrypt
+ 119 00e4 110B0017	    beq $t0, $t3, encrypt
+ 120 00e8               
+ 121 00e8               exit:
+ 122 00e8 8FBF0008	    lw	$ra,8($sp)	
+ 123 00ec 8FB70004		lw	$s7,4($sp)	
+ 124 00f0 8FB60000		lw	$s6,0($sp)	
+ 125 00f4 23BD000C	    addi $sp, $sp, 12
+ 126 00f8 03E00008	    jr $ra
+ 127 00fc               
+ 128 00fc               invalid_size:
+ 129 00fc 3C040000	    la $a0, error_invalid_size
+     0100 34840000
+ 130 0104 34020004	    li $v0,4 
+ 131 0108 0000000C	    syscall
+ 132 010c               
+ 133 010c 3C040000	    la $a0, newline
+     0110 34840000
+ 134 0114 34020004	    li $v0, 4
+ 135 0118 0000000C	    syscall
+ 136 011c 0800003A	    j exit
+ 137 0120               
+ 138 0120               invalid_flag:
+ 139 0120 3C040000	    la $a0, error_invalid_flag
+     0124 34840000
+ 140 0128 34020004	    li $v0,4 
+ 141 012c 0000000C	    syscall
+ 142 0130               
+ 143 0130 3C040000	    la $a0, newline
+     0134 34840000
+ 144 0138 34020004	    li $v0, 4
+ 145 013c 0000000C	    syscall
+ 146 0140 0800003A	    j exit
+ 147 0144               
+ 148 0144               
+ 149 0144               .globl encrypt
+ 150 0144               #
+ 151 0144               # Name:     encrypt
+ 152 0144               # Arguments: a0: buf_len (alphabet size)
+ 153 0144               #            a1: buf_alpha (alphabet)
+ 154 0144               #            a2: buf_key (key to use)
+ 155 0144               #            a3: buf_msg (message to perform action on)
+ 156 0144               encrypt:
+ 157 0144 23BDFFC8	    addi $sp,$sp,-56     # allocate stack frame (on doubleword boundary)
+ 158 0148 AFBF0030	    sw $ra, 48($sp)    # store the ra & s reg's on the stack
+ 159 014c AFB7001C	    sw $s7, 28($sp)
+ 160 0150 AFB60018	    sw $s6, 24($sp)
+ 161 0154 AFB50014	    sw $s5, 20($sp)
+ 162 0158 AFB40010	    sw $s4, 16($sp)
+ 163 015c AFB3000C	    sw $s3, 12($sp)
+ 164 0160 AFB20008	    sw $s2, 8($sp)
+ 165 0164 AFB10004	    sw $s1, 4($sp)
+ 166 0168 AFB00000	    sw $s0, 0($sp)
+ 167 016c               
+ 168 016c 00C08021	    move $s0, $a2           # pointer to buf_key
+ 169 0170 00E08821	    move $s1, $a3           # pointer buf_msg
+ 170 0174 00C09021	    move $s2, $a2           # base of buf_key
+ 171 0178 00E09821	    move $s3, $a3           # base of buf_msg
+ 172 017c                   # move $s4, $a0         # buf_len
+ 173 017c 80940000	    lb $s4, 0($a0)
+ 174 0180 00A0A821	    move $s5, $a1           # buf_alpha
+ 175 0184 2017000A	    addi $s7, $zero, 0x0000000a
+ 176 0188               
+ 177 0188               encrypt_loop:
+ 178 0188 82080000	    lb $t0, 0($s0)          # load first from key
+ 179 018c                   # addi $t1, $zero, 0x0000000a
+ 180 018c 11170001	    beq $t0, $s7, reset_key
+ 181 0190 08000067	    j key_else
+ 182 0194               reset_key:
+ 183 0194 02408021	    move $s0, $s2
+ 184 0198 82080000	    lb $t0, 0($s0)          # load first from key
+ 185 019c               key_else:
+ 186 019c 02802821	    move $a1, $s4
+ 187 01a0 02A03021	    move $a2, $s5
+ 188 01a4 01003821	    move $a3, $t0
+ 189 01a8 0C000115	    jal get_index
+ 190 01ac 00405021	    move $t2, $v0           # index of key char from alpha
+ 191 01b0                  
+ 192 01b0                   
+ 193 01b0 82290000	    lb $t1, 0($s1)          # load first from msg
+ 194 01b4 1120001B	    beq $t1, $zero, exit_encrypt
+ 195 01b8 11370018	    beq $t1, $s7, exit_encrypt_newline
+ 196 01bc 02802821	    move $a1, $s4
+ 197 01c0 02A03021	    move $a2, $s5
+ 198 01c4 01203821	    move $a3, $t1
+ 199 01c8 0C000115	    jal get_index
+ 200 01cc 00405821	    move $t3, $v0           # index of message char from alpha 
+ 201 01d0 00606021	    move $t4, $v1
+ 202 01d4 15800009	    bne $t4, $zero, skip_nf
+ 203 01d8                   
+ 204 01d8 016A6020	    add $t4, $t3, $t2
+ 205 01dc 0194001A	    rem $t6, $t4, $s4       # mod by alphabet size
+     01e0 00007010
+ 206 01e4               
+ 207 01e4 02802821	    move $a1, $s4
+ 208 01e8 02A03021	    move $a2, $s5
+ 209 01ec 01C03821	    move $a3, $t6
+ 210 01f0 0C000122	    jal get_char
+ 211 01f4 00406821	    move $t5, $v0           # converted character
+ 212 01f8 08000083	    j else_f
+ 213 01fc               
+ 214 01fc               skip_nf:
+ 215 01fc A22B0000	    sb $t3, 0($s1)
+ 216 0200 22100001	    addi $s0, $s0, 1
+ 217 0204 22310001	    addi $s1, $s1, 1
+ 218 0208               
+ 219 0208 08000062	    j encrypt_loop
+ 220 020c               else_f:
+ 221 020c A22D0000	    sb $t5, 0($s1)
+ 222 0210 22100001	    addi $s0, $s0, 1
+ 223 0214 22310001	    addi $s1, $s1, 1
+ 224 0218               
+ 225 0218 08000062	    j encrypt_loop
+ 226 021c               
+ 227 021c                   # a0 and a1 should NOT change 
+ 228 021c               exit_encrypt_newline:
+ 229 021c 34090000	    li $t1, 0
+ 230 0220 A2290000	    sb $t1, 0($s1)
+ 231 0224               
+ 232 0224               exit_encrypt:
+ 233 0224               
+ 234 0224 3C040000	    la $a0, letter_d
+     0228 34840000
+ 235 022c 34020004	    li $v0, 4
+ 236 0230 0000000C	    syscall
+ 237 0234               
+ 238 0234 3C080000	    la $t0, buf_len
+     0238 35080000
+ 239 023c 81040000	    lb $a0, 0($t0)
+ 240 0240 34020001	    li $v0, 1
+ 241 0244 0000000C	    syscall
+ 242 0248               
+ 243 0248 3C040000	    la $a0, newline
+     024c 34840000
+ 244 0250 34020004	    li $v0, 4
+ 245 0254 0000000C	    syscall
+ 246 0258               
+ 247 0258 3C040000	    la $a0, buf_alpha
+     025c 34840000
+ 248 0260 34020004	    li $v0, 4
+ 249 0264 0000000C	    syscall
+ 250 0268               
+ 251 0268 3C040000	    la $a0, buf_key
+     026c 34840000
+ 252 0270 34020004	    li $v0, 4
+ 253 0274 0000000C	    syscall
+ 254 0278               
+ 255 0278 3C040000	    la $a0, buf_msg
+     027c 34840000
+ 256 0280 34020004	    li $v0, 4
+ 257 0284 0000000C	    syscall
+ 258 0288               
+ 259 0288 3C040000	    la $a0, newline
+     028c 34840000
+ 260 0290 34020004	    li $v0, 4
+ 261 0294 0000000C	    syscall
+ 262 0298                  
+ 263 0298 8FBF0030	    lw $ra, 48($sp)         # restore the ra & s reg's from the stack 
+ 264 029c 8FB7001C	    lw $s7, 28($sp)
+ 265 02a0 8FB60018	    lw $s6, 24($sp)
+ 266 02a4 8FB50014	    lw $s5, 20($sp)
+ 267 02a8 8FB40010	    lw $s4, 16($sp)
+ 268 02ac 8FB3000C	    lw $s3, 12($sp)
+ 269 02b0 8FB20008	    lw $s2, 8($sp)
+ 270 02b4 8FB10004	    lw $s1, 4($sp)
+ 271 02b8 8FB00000	    lw $s0, 0($sp)
+ 272 02bc 23BD0038	    addi $sp,$sp,56         # clean up stack
+ 273 02c0 03E00008	    jr $ra
+ 274 02c4               
+ 275 02c4               .globl decrypt
+ 276 02c4               #
+ 277 02c4               # Name:     decrypt
+ 278 02c4               # Arguments: a0: buf_len (alphabet size)
+ 279 02c4               #            a1: buf_alpha (alphabet)
+ 280 02c4               #            a2: buf_key (key to use)
+ 281 02c4               #            a3: buf_msg (message to perform action on)
+ 282 02c4               decrypt:
+ 283 02c4 23BDFFC8	    addi $sp,$sp,-56        # allocate stack frame (on doubleword boundary)
+ 284 02c8 AFBF0030	    sw $ra, 48($sp)         # store the ra & s reg's on the stack
+ 285 02cc AFB7001C	    sw $s7, 28($sp)
+ 286 02d0 AFB60018	    sw $s6, 24($sp)
+ 287 02d4 AFB50014	    sw $s5, 20($sp)
+ 288 02d8 AFB40010	    sw $s4, 16($sp)
+ 289 02dc AFB3000C	    sw $s3, 12($sp)
+ 290 02e0 AFB20008	    sw $s2, 8($sp)
+ 291 02e4 AFB10004	    sw $s1, 4($sp)
+ 292 02e8 AFB00000	    sw $s0, 0($sp)
+ 293 02ec               
+ 294 02ec 00C08021	    move $s0, $a2           # pointer to buf_key
+ 295 02f0 00E08821	    move $s1, $a3           # pointer buf_msg
+ 296 02f4 00C09021	    move $s2, $a2           # base of buf_key
+ 297 02f8 00E09821	    move $s3, $a3           # base of buf_msg
+ 298 02fc                   # move $s4, $a0         # buf_len
+ 299 02fc 80940000	    lb $s4, 0($a0)
+ 300 0300 00A0A821	    move $s5, $a1           # buf_alpha
+ 301 0304 2017000A	    addi $s7, $zero, 0x0000000a
+ 302 0308               
+ 303 0308               decrypt_loop:
+ 304 0308 82080000	    lb $t0, 0($s0)          # load first from key
+ 305 030c                   # addi $t1, $zero, 0x0000000a
+ 306 030c 11170001	    beq $t0, $s7, reset_key_decrypt
+ 307 0310 080000C7	    j key_else_decrypt
+ 308 0314               reset_key_decrypt:
+ 309 0314 02408021	    move $s0, $s2
+ 310 0318 82080000	    lb $t0, 0($s0)          # load first from key
+ 311 031c               key_else_decrypt:
+ 312 031c 02802821	    move $a1, $s4
+ 313 0320 02A03021	    move $a2, $s5
+ 314 0324 01003821	    move $a3, $t0
+ 315 0328 0C000115	    jal get_index
+ 316 032c 00405021	    move $t2, $v0           # index of key char from alpha
+ 317 0330                   
+ 318 0330 82290000	    lb $t1, 0($s1)          # load first from msg
+ 319 0334 1120001F	    beq $t1, $zero, exit_decrypt
+ 320 0338 1137001C	    beq $t1, $s7, exit_decrypt_newline
+ 321 033c 02802821	    move $a1, $s4
+ 322 0340 02A03021	    move $a2, $s5
+ 323 0344 01203821	    move $a3, $t1
+ 324 0348 0C000115	    jal get_index
+ 325 034c                   
+ 326 034c 00405821	    move $t3, $v0           # index of message char from alpha 
+ 327 0350 00606021	    move $t4, $v1
+ 328 0354 1580000D	    bne $t4, $zero, skip_nf_decrypt
+ 329 0358                   
+ 330 0358 016A6022	    sub $t4, $t3, $t2
+ 331 035c 0180402A	    slt $t0, $t4, $zero
+ 332 0360 15000001	    bne $t0, $zero, wrap
+ 333 0364 080000DB	    j wrap_else
+ 334 0368               
+ 335 0368               wrap:
+ 336 0368 01946020	    add $t4, $t4, $s4
+ 337 036c               
+ 338 036c               wrap_else:
+ 339 036c               
+ 340 036c 0194001A	    rem $t6, $t4, $s4       # mod by alphabet size
+     0370 00007010
+ 341 0374               
+ 342 0374 02802821	    move $a1, $s4
+ 343 0378 02A03021	    move $a2, $s5
+ 344 037c 01C03821	    move $a3, $t6
+ 345 0380 0C000122	    jal get_char
+ 346 0384 00406821	    move $t5, $v0           # converted character
+ 347 0388                   
+ 348 0388 080000E7	    j else_f_decrypt
+ 349 038c               
+ 350 038c               skip_nf_decrypt:            # not found (don't actually think this is necessary)
+ 351 038c               
+ 352 038c A22B0000	    sb $t3, 0($s1)
+ 353 0390 22100001	    addi $s0, $s0, 1
+ 354 0394 22310001	    addi $s1, $s1, 1
+ 355 0398               
+ 356 0398 080000C2	    j decrypt_loop
+ 357 039c               else_f_decrypt:
+ 358 039c                
+ 359 039c A22D0000	    sb $t5, 0($s1)
+ 360 03a0 22100001	    addi $s0, $s0, 1
+ 361 03a4 22310001	    addi $s1, $s1, 1
+ 362 03a8               
+ 363 03a8 080000C2	    j decrypt_loop
+ 364 03ac               
+ 365 03ac               exit_decrypt_newline:
+ 366 03ac 34090000	    li $t1, 0
+ 367 03b0 A2290000	    sb $t1, 0($s1)
+ 368 03b4               
+ 369 03b4               exit_decrypt:
+ 370 03b4               
+ 371 03b4 3C040000	    la $a0, letter_e
+     03b8 34840000
+ 372 03bc 34020004	    li $v0, 4
+ 373 03c0 0000000C	    syscall
+ 374 03c4               
+ 375 03c4 3C080000	    la $t0, buf_len
+     03c8 35080000
+ 376 03cc 81040000	    lb $a0, 0($t0)
+ 377 03d0 34020001	    li $v0, 1
+ 378 03d4 0000000C	    syscall
+ 379 03d8               
+ 380 03d8 3C040000	    la $a0, newline
+     03dc 34840000
+ 381 03e0 34020004	    li $v0, 4
+ 382 03e4 0000000C	    syscall
+ 383 03e8               
+ 384 03e8 3C040000	    la $a0, buf_alpha
+     03ec 34840000
+ 385 03f0 34020004	    li $v0, 4
+ 386 03f4 0000000C	    syscall
+ 387 03f8               
+ 388 03f8 3C040000	    la $a0, buf_key
+     03fc 34840000
+ 389 0400 34020004	    li $v0, 4
+ 390 0404 0000000C	    syscall
+ 391 0408               
+ 392 0408 3C040000	    la $a0, buf_msg
+     040c 34840000
+ 393 0410 34020004	    li $v0, 4
+ 394 0414 0000000C	    syscall
+ 395 0418               
+ 396 0418 3C040000	    la $a0, newline
+     041c 34840000
+ 397 0420 34020004	    li $v0, 4
+ 398 0424 0000000C	    syscall
+ 399 0428               
+ 400 0428 8FBF0030	    lw $ra, 48($sp)         # restore the ra & s reg's from the stack 
+ 401 042c 8FB7001C	    lw $s7, 28($sp)
+ 402 0430 8FB60018	    lw $s6, 24($sp)
+ 403 0434 8FB50014	    lw $s5, 20($sp)
+ 404 0438 8FB40010	    lw $s4, 16($sp)
+ 405 043c 8FB3000C	    lw $s3, 12($sp)
+ 406 0440 8FB20008	    lw $s2, 8($sp)
+ 407 0444 8FB10004	    lw $s1, 4($sp)
+ 408 0448 8FB00000	    lw $s0, 0($sp)
+ 409 044c 23BD0038	    addi $sp,$sp,56         # clean up stack
+ 410 0450 03E00008	    jr $ra
+ 411 0454               
+ 412 0454               
+ 413 0454               #
+ 414 0454               # Name: get_index
+ 415 0454               # Arguments: $a1: buf_len
+ 416 0454               #            $a2: buf_alpha 
+ 417 0454               #            $a3: character in ascii that you want
+ 418 0454               # Returns: $v0: index
+ 419 0454               #          $v1: if not found, returns the character
+ 420 0454               
+ 421 0454               get_index:
+ 422 0454 34090000	    li $t1, 0
+ 423 0458 34030000	    li $v1, 0
+ 424 045c               index_loop:
+ 425 045c 80C80000	    lb $t0, 0($a2)
+ 426 0460 11070004	    beq $t0, $a3, exit_index
+ 427 0464 11250005	    beq $t1, $a1, exit_index_nf
+ 428 0468 21290001	    addi $t1, $t1, 1
+ 429 046c 20C60001	    addi $a2, $a2, 1
+ 430 0470 08000117	    j index_loop
+ 431 0474               exit_index:             # if found, returns index
+ 432 0474 01201021	    move $v0, $t1
+ 433 0478 03E00008	    jr $ra
+ 434 047c               exit_index_nf:          # if not found, returns the character in ascii
+ 435 047c 00E01021	    move $v0, $a3
+ 436 0480 34030001	    li $v1, 1           # not found flag
+ 437 0484 03E00008	    jr $ra
+ 438 0488               #
+ 439 0488               # Name: get_char
+ 440 0488               # Arguments: $a1: buf_len
+ 441 0488               #            $a2: buf_alpha 
+ 442 0488               #            $a3: index that you want
+ 443 0488               # Returns: $v0: char
+ 444 0488               # 
+ 445 0488               
+ 446 0488               get_char:
+ 447 0488 340D0000	    li $t5, 0
+ 448 048c               char_loop:
+ 449 048c 80C80000	    lb $t0, 0($a2)
+ 450 0490 11A70003	    beq $t5, $a3, exit_char     # returns when index is found
+ 451 0494 21AD0001	    addi $t5, $t5, 1
+ 452 0498 20C60001	    addi $a2, $a2, 1
+ 453 049c 08000123	    j char_loop
+ 454 04a0               exit_char:
+ 455 04a0 01001021	    move $v0, $t0
+ 456 04a4 03E00008	    jr $ra
+ 457 04a8               
+ 458 04a8               
+
+
+        Name          F  Value   M V Sect.              References
+--------------------  - -------- - - ----- ------------------------------------
+PRINT_INT               00000001 =         @    6
+PRINT_STRING            00000004 =         @    7
+READ_INT                00000005 =         @    8
+READ_STRING             00000008 =         @    9
+buf_alpha               00000008 R   data  @   21,  94, 115, 247, 384
+buf_e_or_d              00000000 R   data  @   17,  63,  68, 109
+buf_key                 0000005A R   data  @   23,  99, 116, 251, 388
+buf_len                 00000004 R   data  @   19,  84, 114, 238, 375
+buf_msg                 000000AC R   data  @   25, 104, 117, 255, 392
+char_loop               0000048C R   text  @  448, 453
+decrypt                 000002C4 R G text  @  118, 275, 282
+decrypt_loop            00000308 R   text  @  303, 356, 363
+dollar                  00000139 R   data  @   36
+else_f                  0000020C R   text  @  212, 220
+else_f_decrypt          0000039C R   text  @  348, 357
+encrypt                 00000144 R G text  @  119, 149, 156
+encrypt_loop            00000188 R   text  @  177, 219, 225
+error_invalid_flag      0000011E R   data  @   29, 139
+error_invalid_size      000000FE R   data  @   27, 129
+exit                    000000E8 R   text  @  121, 136, 146
+exit_char               000004A0 R   text  @  450, 454
+exit_decrypt            000003B4 R   text  @  319, 369
+exit_decrypt_newline    000003AC R   text  @  320, 365
+exit_encrypt            00000224 R   text  @  194, 232
+exit_encrypt_newline    0000021C R   text  @  195, 228
+exit_index              00000474 R   text  @  426, 431
+exit_index_nf           0000047C R   text  @  427, 434
+get_char                00000488 R   text  @  210, 345, 446
+get_index               00000454 R   text  @  189, 199, 315, 324, 421
+good_flag               00000044 R   text  @   73,  79
+index_loop              0000045C R   text  @  424, 430
+invalid_flag            00000120 R   text  @   77, 138
+invalid_size            000000FC R   text  @   88,  92, 128
+key_else                0000019C R   text  @  181, 185
+key_else_decrypt        0000031C R   text  @  307, 311
+letter_d                00000140 R   data  @   42, 234
+letter_e                0000013D R   data  @   40, 371
+main                    00000000 R G text  @   52,  57
+newline                 0000013B R   data  @   38, 133, 143, 243, 259, 380, 396
+not_e                   00000040 R   text  @   72,  75
+pound                   00000137 R   data  @   34
+reset_key               00000194 R   text  @  180, 182
+reset_key_decrypt       00000314 R   text  @  306, 308
+skip_nf                 000001FC R   text  @  202, 214
+skip_nf_decrypt         0000038C R   text  @  328, 350
+space                   00000135 R   data  @   32
+wrap                    00000368 R   text  @  332, 335
+wrap_else               0000036C R   text  @  333, 338
